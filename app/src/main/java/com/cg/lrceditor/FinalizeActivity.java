@@ -245,9 +245,26 @@ public class FinalizeActivity extends AppCompatActivity {
 		runOnUiThread(() -> statusTextView.setText(msg));
 	}
 
+	// Validate that a filename is safe for use (no path traversal, no separators)
+	private boolean isSafeFileName(String fileName) {
+		if (fileName == null || fileName.isEmpty()) return false;
+		if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\") || fileName.startsWith(".")) return false;
+		// Only allow common safe filename characters, optionally ensure it ends with .lrc
+		return fileName.matches("^[a-zA-Z0-9_\\-\\.]+$");
+	}
+
 	private void saveLyricsFile(String filePath, String fileName) {
 		final String finalFileName = fileName;
 		final String finalFilePath = filePath;
+
+		if (!isSafeFileName(finalFileName)) {
+			runOnUiThread(() ->
+					Toast.makeText(getApplicationContext(),
+							getString(R.string.invalid_filename_message),
+							Toast.LENGTH_LONG).show());
+			statusTextView.setVisibility(View.GONE);
+			return;
+		}
 
 		// A bit buggy: See comments in renameAsync() in HomePage.java
 		if (new File(finalFilePath, finalFileName).exists()) {
