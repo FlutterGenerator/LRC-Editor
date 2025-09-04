@@ -173,4 +173,5 @@
 	<string name="whoops_error">Whoops! An error occurred!</string>
 	<string name="writing_lyrics_message">Writing the lyrics to the file</string>
 	<string name="yes">Yes</string>
+	<string name="invalid_filename_message">Invalid file name</string>
 </resources>
