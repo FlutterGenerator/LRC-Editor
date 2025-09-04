@@ -1,4 +1,6 @@
 name: Publish development release
+permissions:
+  contents: write
 
 on:
   push:
