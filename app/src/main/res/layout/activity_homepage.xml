@@ -41,10 +41,10 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_gravity="center"
-		android:drawableTop="@drawable/ic_thats_a_miss"
 		android:gravity="center"
 		android:text="@string/thats_a_miss"
-		android:visibility="visible" />
+		android:visibility="visible"
+		app:drawableTopCompat="@drawable/ic_thats_a_miss" />
 
 	<com.google.android.material.floatingactionbutton.FloatingActionButton
 		android:id="@+id/fab"
@@ -52,6 +52,7 @@
 		android:layout_height="wrap_content"
 		android:layout_gravity="bottom|end"
 		android:layout_margin="@dimen/dp16"
+		android:importantForAccessibility="no"
 		app:srcCompat="@drawable/ic_add_light" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

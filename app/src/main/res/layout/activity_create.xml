@@ -44,11 +44,13 @@
 			android:id="@+id/lyrics_textbox"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
+			android:autofillHints=""
 			android:background="@drawable/rounded_border"
 			android:gravity="center"
 			android:inputType="text|textMultiLine"
 			android:padding="@dimen/dp10"
-			android:scrollbars="vertical" />
+			android:scrollbars="vertical"
+			tools:ignore="LabelFor" />
 
 	</ScrollView>
 

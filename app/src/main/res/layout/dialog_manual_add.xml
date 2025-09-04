@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:gravity="center"
@@ -24,10 +25,12 @@
 			android:id="@+id/manual_minutes_edittext"
 			android:layout_width="50dp"
 			android:layout_height="wrap_content"
+			android:autofillHints=""
 			android:gravity="center"
 			android:inputType="number"
 			android:maxLength="2"
-			android:text="00" />
+			android:text="00"
+			tools:ignore="HardcodedText,LabelFor" />
 
 		<TextView
 			android:layout_width="wrap_content"
@@ -35,16 +38,19 @@
 			android:paddingLeft="@dimen/dp10"
 			android:paddingRight="@dimen/dp10"
 			android:text=":"
-			android:textStyle="bold" />
+			android:textStyle="bold"
+			tools:ignore="HardcodedText" />
 
 		<EditText
 			android:id="@+id/manual_seconds_edittext"
 			android:layout_width="50dp"
 			android:layout_height="wrap_content"
+			android:autofillHints=""
 			android:gravity="center"
 			android:inputType="number"
 			android:maxLength="2"
-			android:text="00" />
+			android:text="00"
+			tools:ignore="HardcodedText,LabelFor" />
 
 		<TextView
 			android:layout_width="wrap_content"
@@ -52,16 +58,19 @@
 			android:paddingLeft="@dimen/dp10"
 			android:paddingRight="@dimen/dp10"
 			android:text=":"
-			android:textStyle="bold" />
+			android:textStyle="bold"
+			tools:ignore="HardcodedText" />
 
 		<EditText
 			android:id="@+id/manual_milliseconds_edittext"
 			android:layout_width="50dp"
 			android:layout_height="wrap_content"
+			android:autofillHints=""
 			android:gravity="center"
 			android:inputType="number"
 			android:maxLength="2"
-			android:text="00" />
+			android:text="00"
+			tools:ignore="HardcodedText,LabelFor" />
 
 	</LinearLayout>
 

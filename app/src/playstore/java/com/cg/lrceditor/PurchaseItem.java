@@ -3,6 +3,7 @@ package com.cg.lrceditor;
 import android.content.Context;
 import android.widget.Button;
 
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.SkuDetails;
 
 public class PurchaseItem {
@@ -46,8 +47,7 @@ public class PurchaseItem {
 		return sku;
 	}
 
-	public void setSku(SkuDetails sku) {
-		this.sku = sku;
+	public void setSku(ProductDetails sku) {
 	}
 
 	public boolean isPurchased() {

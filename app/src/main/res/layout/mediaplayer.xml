@@ -13,7 +13,8 @@
 		android:clickable="true"
 		android:focusable="true"
 		android:focusableInTouchMode="true"
-		android:onClick="selectSong"> <!-- player_title_text gets refreshed for some reason without this -->
+		android:onClick="selectSong"
+		tools:ignore="UsingOnClickInXml"> <!-- player_title_text gets refreshed for some reason without this -->
 
 		<TextView
 			android:id="@+id/player_title_text"
@@ -55,7 +56,8 @@
 			android:gravity="center"
 			android:maxLines="1"
 			android:text="00:00"
-			android:textStyle="bold" />
+			android:textStyle="bold"
+			tools:ignore="HardcodedText" />
 
 		<SeekBar
 			android:id="@+id/seekbar"
@@ -85,7 +87,8 @@
 				android:layout_weight=".3"
 				android:contentDescription="@string/previous_description"
 				android:onClick="rewind5"
-				android:text="@string/previous_5" />
+				android:text="@string/previous_5"
+				tools:ignore="UsingOnClickInXml" />
 
 			<ImageButton
 				android:id="@+id/play_pause_collapsed"
@@ -94,7 +97,8 @@
 				android:layout_weight=".35"
 				android:contentDescription="@string/play_button_description"
 				android:onClick="playPause"
-				android:src="@drawable/ic_play" />
+				android:src="@drawable/ic_play"
+				tools:ignore="UsingOnClickInXml" />
 
 			<Button
 				android:layout_width="0dp"
@@ -102,7 +106,8 @@
 				android:layout_weight=".3"
 				android:contentDescription="@string/forward_description"
 				android:onClick="forward5"
-				android:text="@string/forward_5" />
+				android:text="@string/forward_5"
+				tools:ignore="UsingOnClickInXml" />
 
 		</LinearLayout>
 
@@ -115,7 +120,8 @@
 			android:gravity="center"
 			android:maxLines="1"
 			android:text="00:00"
-			android:textStyle="bold" />
+			android:textStyle="bold"
+			tools:ignore="HardcodedText" />
 
 	</RelativeLayout>
 
@@ -133,7 +139,8 @@
 			android:layout_weight="1"
 			android:contentDescription="@string/previous_description"
 			android:onClick="rewind5"
-			android:text="@string/previous_5" />
+			android:text="@string/previous_5"
+			tools:ignore="UsingOnClickInXml" />
 
 		<ImageButton
 			android:id="@+id/play_pause"
@@ -142,7 +149,8 @@
 			android:layout_weight="2"
 			android:contentDescription="@string/play_button_description"
 			android:onClick="playPause"
-			android:src="@drawable/ic_play" />
+			android:src="@drawable/ic_play"
+			tools:ignore="UsingOnClickInXml" />
 
 		<Button
 			android:layout_width="0dp"
@@ -150,7 +158,8 @@
 			android:layout_weight="1"
 			android:contentDescription="@string/forward_description"
 			android:onClick="forward5"
-			android:text="@string/forward_5" />
+			android:text="@string/forward_5"
+			tools:ignore="UsingOnClickInXml" />
 
 	</LinearLayout>
 

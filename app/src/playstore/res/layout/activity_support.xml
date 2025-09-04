@@ -59,7 +59,8 @@
 					android:layout_height="wrap_content"
 					android:layout_weight=".3"
 					android:gravity="center"
-					android:text="♥" />
+					android:text="♥"
+					tools:ignore="HardcodedText" />
 
 				<Button
 					android:id="@+id/one"
@@ -68,7 +69,8 @@
 					android:layout_weight=".6"
 					android:onClick="makePurchase"
 					android:tag="1"
-					android:text="@string/loading" />
+					android:text="@string/loading"
+					tools:ignore="UsingOnClickInXml" />
 
 			</LinearLayout>
 
@@ -83,7 +85,8 @@
 					android:layout_height="wrap_content"
 					android:layout_weight=".3"
 					android:gravity="center"
-					android:text="♥♥" />
+					android:text="♥♥"
+					tools:ignore="HardcodedText" />
 
 				<Button
 					android:id="@+id/two"
@@ -92,7 +95,8 @@
 					android:layout_weight=".6"
 					android:onClick="makePurchase"
 					android:tag="2"
-					android:text="@string/loading" />
+					android:text="@string/loading"
+					tools:ignore="UsingOnClickInXml" />
 
 			</LinearLayout>
 
@@ -107,7 +111,8 @@
 					android:layout_height="wrap_content"
 					android:layout_weight=".3"
 					android:gravity="center"
-					android:text="♥♥♥" />
+					android:text="♥♥♥"
+					tools:ignore="HardcodedText" />
 
 				<Button
 					android:id="@+id/three"
@@ -116,7 +121,8 @@
 					android:layout_weight=".6"
 					android:onClick="makePurchase"
 					android:tag="3"
-					android:text="@string/loading" />
+					android:text="@string/loading"
+					tools:ignore="UsingOnClickInXml" />
 
 			</LinearLayout>
 
@@ -131,7 +137,8 @@
 					android:layout_height="wrap_content"
 					android:layout_weight=".3"
 					android:gravity="center"
-					android:text="♥♥♥♥" />
+					android:text="♥♥♥♥"
+					tools:ignore="HardcodedText" />
 
 				<Button
 					android:id="@+id/four"
@@ -140,7 +147,8 @@
 					android:layout_weight=".6"
 					android:onClick="makePurchase"
 					android:tag="4"
-					android:text="@string/loading" />
+					android:text="@string/loading"
+					tools:ignore="UsingOnClickInXml" />
 
 			</LinearLayout>
 
@@ -156,7 +164,8 @@
 					android:layout_height="wrap_content"
 					android:layout_weight=".3"
 					android:gravity="center"
-					android:text="♥♥♥♥♥" />
+					android:text="♥♥♥♥♥"
+					tools:ignore="HardcodedText" />
 
 				<Button
 					android:id="@+id/five"
@@ -165,7 +174,8 @@
 					android:layout_weight=".6"
 					android:onClick="makePurchase"
 					android:tag="5"
-					android:text="@string/loading" />
+					android:text="@string/loading"
+					tools:ignore="UsingOnClickInXml" />
 
 			</LinearLayout>
 

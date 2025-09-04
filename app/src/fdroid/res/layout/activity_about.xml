@@ -85,8 +85,8 @@
 				android:layout_marginTop="@dimen/dp24"
 				android:drawableEnd="@drawable/ic_open_in_new"
 				android:drawablePadding="@dimen/dp5"
-				android:onClick="viewApp"
-				android:text="@string/view_the_app_on_f_droid" />
+				android:text="@string/view_the_app_on_f_droid"
+				tools:ignore="UsingOnClickInXml" />
 
 			<Button
 				android:id="@+id/send_feedback_button"
@@ -95,8 +95,8 @@
 				android:layout_gravity="center_horizontal"
 				android:drawableEnd="@drawable/ic_open_in_new"
 				android:drawablePadding="@dimen/dp5"
-				android:onClick="sendFeedback"
-				android:text="@string/send_feedback" />
+				android:text="@string/send_feedback"
+				tools:ignore="UsingOnClickInXml" />
 
 			<TextView
 				android:layout_width="match_parent"

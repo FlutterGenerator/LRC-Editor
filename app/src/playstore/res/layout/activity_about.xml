@@ -86,7 +86,8 @@
 				android:drawableEnd="@drawable/ic_open_in_new"
 				android:drawablePadding="@dimen/dp5"
 				android:onClick="rateAndReview"
-				android:text="@string/rate_and_review_text" />
+				android:text="@string/rate_and_review_text"
+				tools:ignore="UsingOnClickInXml" />
 
 			<Button
 				android:id="@+id/send_feedback_button"
@@ -96,14 +97,16 @@
 				android:drawableEnd="@drawable/ic_open_in_new"
 				android:drawablePadding="@dimen/dp5"
 				android:onClick="sendFeedback"
-				android:text="@string/send_feedback" />
+				android:text="@string/send_feedback"
+				tools:ignore="UsingOnClickInXml" />
 
 			<Button
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center_horizontal"
 				android:onClick="startSupportActivity"
-				android:text="@string/support_me" />
+				android:text="@string/support_me"
+				tools:ignore="UsingOnClickInXml" />
 
 		</LinearLayout>
 

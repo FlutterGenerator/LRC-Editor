@@ -1,57 +1,64 @@
 name: Publish development release
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+    push:
+        branches:
+            - master
+    workflow_dispatch:
 
 jobs:
-  release_development_build:
-    runs-on: ubuntu-latest
+    release_development_build:
+        runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout master branch
-      uses: actions/checkout@v4
-        
-    - name: Set up JDK 8
-      uses: actions/setup-java@v4
-      with:
-        java-version: 8
-        distribution: 'zulu'
+        steps:
+            - name: Checkout master branch
+              uses: actions/checkout@v5
 
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        cmdline-tools-version: 8512546
-        log-accepted-android-sdk-licenses: false
-        
-    - name: Make gradlew executable
-      run: chmod +x gradlew
+            - name: Set up JDK 17
+              uses: actions/setup-java@v5
+              with:
+                  java-version: '17'
+                  distribution: 'temurin'
 
-    - name: Build APK
-      run: ./gradlew assembleFdroidDebug
+            - name: Set up Android SDK
+              uses: android-actions/setup-android@v3
+              with:
+                  cmdline-tools-version: 8512546
+                  log-accepted-android-sdk-licenses: true
 
-    - name: Set environment variables
-      run: |
-        SHA_SHORT=$(git rev-parse --short HEAD)
-        echo "APK_PATH=app/build/outputs/apk/fdroid/debug" >> $GITHUB_ENV
-        echo "APK_NAME=LRC.Editor.Dev.Debug.$SHA_SHORT" >> $GITHUB_ENV
+            - name: Make gradlew executable
+              run: chmod +x gradlew
 
-    - name: Rename APK
-      run: mv $APK_PATH/app-fdroid-debug.apk $APK_PATH/$APK_NAME.apk
+            - name: Build APKs
+              run: ./gradlew assembleFdroidDebug assemblePlayStoreDebug
 
-    - name: Cleanup v-dev tag and release
-      run: gh release delete v-dev --cleanup-tag --yes || true
-      env:
-        GH_TOKEN: ${{ github.token }}
+            - name: Set environment variables
+              run: |
+                  SHA_SHORT=$(git rev-parse --short HEAD)
+                  echo "SHA_SHORT=$SHA_SHORT" >> $GITHUB_ENV
+                  echo "APK_PATH_FDROID=app/build/outputs/apk/fdroid/debug" >> $GITHUB_ENV
+                  echo "APK_PATH_PLAYSTORE=app/build/outputs/apk/playStore/debug" >> $GITHUB_ENV
+                  echo "APK_NAME_FDROID=LRC.Editor.Dev.Debug.FDroid.$SHA_SHORT" >> $GITHUB_ENV
+                  echo "APK_NAME_PLAYSTORE=LRC.Editor.Dev.Debug.PlayStore.$SHA_SHORT" >> $GITHUB_ENV
 
-    - name: Upload APK release
-      run: |
-        gh release create v-dev $APK_PATH/$APK_NAME.apk \
-        --title "LRC Editor Developer Build" \
-        --notes "Unreleased developer build (\`fdroid\` build variant) with the latest updates" \
-        --target ${{ github.sha }} \
-        --prerelease
-      env:
-        GH_TOKEN: ${{ github.token }}
+            - name: Rename APKs
+              run: |
+                  mv $APK_PATH_FDROID/app-fdroid-debug.apk $APK_PATH_FDROID/$APK_NAME_FDROID.apk
+                  mv $APK_PATH_PLAYSTORE/app-playStore-debug.apk $APK_PATH_PLAYSTORE/$APK_NAME_PLAYSTORE.apk
+
+            - name: Cleanup v-dev tag and release
+              run: gh release delete v-dev --cleanup-tag --yes || true
+              env:
+                  GH_TOKEN: ${{ github.token }}
+
+            - name: Upload APKs to GitHub release
+              run: |
+                  gh release create v-dev \
+                    $APK_PATH_FDROID/$APK_NAME_FDROID.apk \
+                    $APK_PATH_PLAYSTORE/$APK_NAME_PLAYSTORE.apk \
+                    --title "LRC Editor Developer Build" \
+                    --notes "Unreleased developer build with latest updates (FDroid & PlayStore debug variants)" \
+                    --target ${{ github.sha }} \
+                    --prerelease
+              env:
+                  GH_TOKEN: ${{ github.token }}

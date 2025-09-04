@@ -17,10 +17,14 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.QueryPurchaseHistoryParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -64,11 +68,11 @@ public class SupportActivity extends AppCompatActivity {
 
 	private void initPurchaseItems() {
 		purchaseItems = new PurchaseItem[]{
-				new PurchaseItem("SKU1", findViewById(R.id.one)),
-				new PurchaseItem("SKU2", findViewById(R.id.two)),
-				new PurchaseItem("SKU3", findViewById(R.id.three)),
-				new PurchaseItem("SKU4", findViewById(R.id.four)),
-				new PurchaseItem("SKU5", findViewById(R.id.five)),
+			new PurchaseItem("SKU1", findViewById(R.id.one)),
+			new PurchaseItem("SKU2", findViewById(R.id.two)),
+			new PurchaseItem("SKU3", findViewById(R.id.three)),
+			new PurchaseItem("SKU4", findViewById(R.id.four)),
+			new PurchaseItem("SKU5", findViewById(R.id.five)),
 		};
 	}
 
@@ -77,19 +81,19 @@ public class SupportActivity extends AppCompatActivity {
 	 */
 	private void initBilling() {
 		billingClient = BillingClient.newBuilder(this)
-				.setListener((billingResult, purchases) -> {
-					if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
-							&& purchases != null) {
-						for (Purchase purchase : purchases) {
-							handlePurchase(purchase);
-						}
-					} else if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.USER_CANCELED
-							&& billingResult.getResponseCode() != BillingClient.BillingResponseCode.DEVELOPER_ERROR) {
-						alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_complete_purchase_message), billingResult.getResponseCode()));
+			.setListener((billingResult, purchases) -> {
+				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
+					&& purchases != null) {
+					for (Purchase purchase : purchases) {
+						handlePurchase(purchase);
 					}
-				})
-				.enablePendingPurchases()
-				.build();
+				} else if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.USER_CANCELED
+					&& billingResult.getResponseCode() != BillingClient.BillingResponseCode.DEVELOPER_ERROR) {
+					alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_complete_purchase_message), billingResult.getResponseCode()));
+				}
+			})
+			.enablePendingPurchases()
+			.build();
 
 		initConnection();
 	}
@@ -98,13 +102,17 @@ public class SupportActivity extends AppCompatActivity {
 		if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
 			if (!purchase.isAcknowledged()) {
 				AcknowledgePurchaseParams acknowledgePurchaseParams =
-						AcknowledgePurchaseParams.newBuilder()
-								.setPurchaseToken(purchase.getPurchaseToken())
-								.build();
+					AcknowledgePurchaseParams.newBuilder()
+						.setPurchaseToken(purchase.getPurchaseToken())
+						.build();
 				billingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult -> {
 					if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
 						grantPurchasePerks();
-						purchaseItems[getSkuIndex(purchase.getSku())].setPurchased();
+						// Обновлено для v5+
+						for (String productId : purchase.getProducts()) {
+							int skuIndex = getSkuIndex(productId);
+							if (skuIndex != -1) purchaseItems[skuIndex].setPurchased();
+						}
 						queryPurchaseHistoryAsync(); // Update purchases
 					} else {
 						alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_acknowledge_purchase), billingResult.getResponseCode()));
@@ -126,17 +134,12 @@ public class SupportActivity extends AppCompatActivity {
 	 * Connects billing with Google Play servers
 	 */
 	private void initConnection() {
-		if (billingClient.isReady()) {
-			// Already connected, call endConnection() to disconnect
-			return;
-		}
+		if (billingClient.isReady()) return;
 
-		// Not really an issue if this gets called multiple times as those cases are handled internally
 		billingClient.startConnection(new BillingClientStateListener() {
 			@Override
 			public void onBillingSetupFinished(BillingResult billingResult) {
 				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-					// The BillingClient is ready
 					queryInventory();
 				}
 			}
@@ -154,44 +157,45 @@ public class SupportActivity extends AppCompatActivity {
 	 */
 	private void queryInventory() {
 		if (!billingClient.isReady()) {
-			// Billing wasn't initialized
 			initConnection();
 			return;
 		}
 
 		List<String> skuStringList = getSkuStringList();
-		SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-		params.setSkusList(skuStringList).setType(BillingClient.SkuType.INAPP);
-		billingClient.querySkuDetailsAsync(params.build(),
-				(billingResult, skuDetailsList) -> {
-					if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-						if (skuDetailsList != null) {
-							// Sort the sku list according to the sku string order
-							// Because Google sorts it alphabetically for some reason
-							String[] skuStrings = skuStringList.toArray(new String[0]);
-							Collections.sort(skuDetailsList, (skuDetails, skuDetails2) -> {
-								for (String skuString : skuStrings) {
-									if (skuDetails.getSku().equals(skuString)) {
-										return -1;
-									} else if (skuDetails2.getSku().equals(skuString)) {
-										return 1;
-									}
-								}
-								return 0;
-							});
+		List<QueryProductDetailsParams.Product> products = new ArrayList<>();
+		for (String sku : skuStringList) {
+			products.add(QueryProductDetailsParams.Product.newBuilder()
+				.setProductId(sku)
+				.setProductType(BillingClient.ProductType.INAPP)
+				.build());
+		}
 
-							// Update the purchase items with the sku
-							for (int i = 0; i < skuDetailsList.size(); i++) {
-								purchaseItems[i].setSku(skuDetailsList.get(i));
-							}
+		QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+			.setProductList(products)
+			.build();
+
+		billingClient.queryProductDetailsAsync(params, (billingResult, productDetailsList) -> {
+			if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+				if (productDetailsList != null) {
+					String[] skuStrings = skuStringList.toArray(new String[0]);
+					Collections.sort(productDetailsList, (pd1, pd2) -> {
+						for (String skuString : skuStrings) {
+							if (pd1.getProductId().equals(skuString)) return -1;
+							else if (pd2.getProductId().equals(skuString)) return 1;
 						}
+						return 0;
+					});
 
-						queryPurchaseHistoryAsync();
-					} else {
-						alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_load_products), billingResult.getResponseCode()));
-						updatePurchaseButtonTexts();
+					for (int i = 0; i < productDetailsList.size(); i++) {
+						purchaseItems[i].setSku(productDetailsList.get(i));
 					}
-				});
+				}
+				queryPurchaseHistoryAsync();
+			} else {
+				alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_load_products), billingResult.getResponseCode()));
+				updatePurchaseButtonTexts();
+			}
+		});
 	}
 
 	private List<String> getSkuStringList() {
@@ -207,21 +211,22 @@ public class SupportActivity extends AppCompatActivity {
 	 */
 	private void queryPurchaseHistoryAsync() {
 		if (!billingClient.isReady()) {
-			// Billing wasn't initialized
 			initConnection();
 			return;
 		}
 
-		billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.INAPP, (billingResult, list) -> {
-			if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-				if (list != null) {
-					queryPurchases();
+		billingClient.queryPurchaseHistoryAsync(
+			QueryPurchaseHistoryParams.newBuilder()
+				.setProductType(BillingClient.ProductType.INAPP)
+				.build(),
+			(billingResult, list) -> {
+				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+					if (list != null) queryPurchases();
+				} else {
+					alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_check_purchase_history), billingResult.getResponseCode()));
+					updatePurchaseButtonTexts();
 				}
-			} else {
-				alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_check_purchase_history), billingResult.getResponseCode()));
-				updatePurchaseButtonTexts();
-			}
-		});
+			});
 	}
 
 	/**
@@ -229,47 +234,43 @@ public class SupportActivity extends AppCompatActivity {
 	 */
 	private void queryPurchases() {
 		if (!billingClient.isReady()) {
-			// Billing wasn't initialized
 			initConnection();
 			return;
 		}
 
-		Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
-		List<Purchase> purchaseList = purchasesResult.getPurchasesList();
-		if (purchasesResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-			if (purchaseList != null) {
-				boolean invalidSku = false;
+		billingClient.queryPurchasesAsync(
+			QueryPurchasesParams.newBuilder()
+				.setProductType(BillingClient.ProductType.INAPP)
+				.build(),
+			(billingResult, purchasesList) -> {
+				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+					if (purchasesList != null) {
+						boolean invalidSku = false;
+						for (Purchase purchase : purchasesList) {
+							for (String productId : purchase.getProducts()) {
+								int skuIndex = getSkuIndex(productId);
+								if (skuIndex == -1) {
+									invalidSku = true;
+									break;
+								}
+								if (purchase.getPurchaseState() != Purchase.PurchaseState.PENDING) {
+									purchaseItems[skuIndex].setPurchased();
+									grantPurchasePerks();
+								}
+							}
+						}
 
-				for (int i = 0; i < purchaseList.size(); i++) {
-					// Treats both PURCHASED and UNSPECIFIED purchases as purchased
-					// Not sure why some purchases are UNSPECIFIED, maybe it's because a purchase could not be validated?
-
-					int skuIndex = getSkuIndex(purchaseList.get(i).getSku());
-					if (skuIndex == -1) {
-						// Invalid SKU found
-						invalidSku = true;
-						break;
+						if (invalidSku) {
+							alert(getString(R.string.error), getString(R.string.could_not_validate_skus));
+						} else if (purchasesList.size() == 0) {
+							revokePurchasePerks();
+						}
 					}
-
-					if (purchaseList.get(i).getPurchaseState() != Purchase.PurchaseState.PENDING) {
-						purchaseItems[skuIndex].setPurchased();
-						grantPurchasePerks();
-					}
+				} else {
+					alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_check_local_purchase), billingResult.getResponseCode()));
 				}
-
-				if (invalidSku) {
-					// Invalid SKU returned. LRC Editor's code on GitHub does not expose the original SKUs for security purposes
-					alert(getString(R.string.error), getString(R.string.could_not_validate_skus));
-				} else if (purchaseList.size() == 0) {
-					// Nothing has been purchased; revoke perks
-					revokePurchasePerks();
-				}
-			}
-		} else {
-			alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_check_local_purchase), purchasesResult.getResponseCode()));
-		}
-
-		updatePurchaseButtonTexts();
+				updatePurchaseButtonTexts();
+			});
 	}
 
 	public void makePurchase(View view) {
@@ -277,8 +278,13 @@ public class SupportActivity extends AppCompatActivity {
 		SkuDetails skuDetails = purchaseItems[index - 1].getSku();
 		if (skuDetails != null) {
 			BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-					.setSkuDetails(purchaseItems[index - 1].getSku())
-					.build();
+				.setProductDetailsParamsList(
+					Arrays.asList(
+						BillingFlowParams.ProductDetailsParams.newBuilder()
+							.build()
+					)
+				)
+				.build();
 			int responseCode = billingClient.launchBillingFlow(this, billingFlowParams).getResponseCode();
 			if (responseCode != BillingClient.BillingResponseCode.OK) {
 				alert(getString(R.string.error), getErrorCodeString(getString(R.string.failed_to_open_purchase_dialog), responseCode));
@@ -291,7 +297,6 @@ public class SupportActivity extends AppCompatActivity {
 	private void grantPurchasePerks() {
 		if (!preferences.getString(Constants.PURCHASED_PREFERENCE, "").equals("Y")) {
 			alert(getString(R.string.purchase_successful), getString(R.string.thank_you_for_the_purchase_message));
-
 			SharedPreferences.Editor editor = preferences.edit();
 			editor.putString(Constants.PURCHASED_PREFERENCE, "Y");
 			editor.apply();
@@ -309,12 +314,10 @@ public class SupportActivity extends AppCompatActivity {
 
 	private int getSkuIndex(String skuString) {
 		for (int i = 0; i < purchaseItems.length; i++) {
-			PurchaseItem purchaseItem = purchaseItems[i];
-			if (purchaseItem.getSkuString().equals(skuString)) {
+			if (purchaseItems[i].getSkuString().equals(skuString)) {
 				return i;
 			}
 		}
-
 		return -1;
 	}
 
@@ -327,13 +330,12 @@ public class SupportActivity extends AppCompatActivity {
 	private void alert(String title, String message) {
 		try {
 			new AlertDialog.Builder(SupportActivity.this)
-					.setTitle(title)
-					.setMessage(message)
-					.setPositiveButton(getString(R.string.ok), null)
-					.create()
-					.show();
+				.setTitle(title)
+				.setMessage(message)
+				.setPositiveButton(getString(R.string.ok), null)
+				.create()
+				.show();
 		} catch (WindowManager.BadTokenException e) {
-			// Looks like the app is in the background, can't use an AlertDialog
 			Log.w("LRC Editor - Support", "[" + title + "] " + message);
 		}
 	}
@@ -348,7 +350,6 @@ public class SupportActivity extends AppCompatActivity {
 			onBackPressed();
 			return true;
 		}
-
-		return (super.onOptionsItemSelected(item));
+		return super.onOptionsItemSelected(item);
 	}
 }
